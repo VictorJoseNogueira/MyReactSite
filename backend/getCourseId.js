@@ -39,6 +39,7 @@ async function getTheCourseID(courseNameFront) {
             console.warn(`Nenhuma tabela encontrada para o curso: "${courseName}".`);
             return []; // Retorna array vazio ao invés de lançar erro
         }
+        console.log(result);
         return result; // Retorna a lista de cursos encontrados
 
     } catch (error) {

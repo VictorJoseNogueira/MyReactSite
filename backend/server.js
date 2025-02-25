@@ -1,50 +1,69 @@
 import express from 'express';
-import cors from 'cors'; // Para permitir requisições do frontend
+import cors from 'cors';
 import bodyParser from 'body-parser';
-import getTheCourseID from "./getCourseId.js";
-import FindTheName from "./getTeachersId.js";
-import getTheName from "./getNameById.js";
+import getCourseTeachers from './callingTheGets.js'; 
+import getTeacherData from './getTeacherData.js';
 
 const app = express();
 const PORT = 5000;
 
-// Middleware para permitir CORS e processar JSON
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rota para receber os dados do frontend
 app.post('/api/curso', async (req, res) => {
+    try {
+        const { course } = req.body;
+
+
+        // Se apenas o curso for enviado, retorne os professores relacionados
+        if (course) {
+            const teachersNames = await getCourseTeachers(course);
+
+            console.log("Resposta enviada para o front-end:", { 
+                message: 'Professores carregados com sucesso!', 
+                teachers: teachersNames 
+            });
+
+            return res.status(200).json({ 
+                message: 'Professores carregados com sucesso!', 
+                teachers: teachersNames 
+            });
+        }else{
+          throw new Error('Dados inválidos: curso obrigatórios.');
+        }
+        throw new Error('Dados inválidos');
+
+    } catch (error) {
+        console.error("Erro no servidor:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/professor', async (req, res) => {
   try {
-      const { course } = req.body;
-      console.log('Dados recebidos do frontend:', { course });
+      const { course, teacher } = req.body;
 
-      const courseID = await getTheCourseID(JSON.stringify(course));
-      
-      if (!courseID || courseID.length === 0) {
-          return res.status(404).json({ error: 'Curso não encontrado no banco de dados.' });
+      if (!course || !teacher) {
+          throw new Error('Curso e professor são obrigatórios.');
       }
 
-      console.log("ID do curso encontrado:", courseID[0]);
+      const teacherData = await getTeacherData(course, teacher);
 
-      const teachers = await FindTheName(courseID[0].id_curso);
-      
-      if (!teachers || teachers.length === 0) {
-          return res.status(404).json({ error: 'Nenhum professor encontrado para este curso.' });
-      }
+      console.log("Resposta enviada para o front-end:", {
+          message: 'Dados do professor carregados com sucesso!',
+          grandeArea: teacherData
+      });
 
-      const teachersNames = await getTheName(teachers); // Chama a função corrigida
-
-      console.log("Resposta enviada para o front-end:", { message: 'Dados recebidos com sucesso!', teachers: teachersNames });
-      res.status(200).json({ message: 'Dados recebidos com sucesso!', teachers: teachersNames });
+      return res.status(200).json({
+          message: 'Dados do professor carregados com sucesso!',
+          grandeArea: teacherData
+      });
   } catch (error) {
       console.error("Erro no servidor:", error.message);
-      res.status(500).json({ error: "Erro interno no servidor." });
+      res.status(500).json({ error: error.message });
   }
 });
 
-
-
-// Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

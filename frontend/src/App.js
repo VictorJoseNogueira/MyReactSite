@@ -8,7 +8,6 @@ const placeHolder = '----------';
 const courses = [placeHolder, 'Extensivo 2025', 'New Revalida Sem-Extensivo'];
 const menuItems = [placeHolder, 'Módulo 1', 'Módulo 2', 'Módulo 3'];
 
-// Objeto que mapeia os dados dos professores
 const teacherData = {
   'Afonso da Silva Alves Bento': {
     area: 'Pediatria',
@@ -31,31 +30,37 @@ const teacherData = {
 };
 
 function App() {
-  // Estados dentro do componente App
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState('');
-  const [teachers, setTeachers] = useState([placeHolder]); // Estado para armazenar os professores
-  const [error, setError] = useState(null); // Estado para armazenar mensagens de erro
-  const [loading, setLoading] = useState(false); // Estado para indicar carregamento
+  const [teachers, setTeachers] = useState([placeHolder]);
+  const [area, setGrandeArea] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Função para capturar a mudança no dropdown de cursos e enviar ao backend
   const handleCourseChange = async (event) => {
     const selectedValue = event.target.value;
     setSelectedCourse(selectedValue);
+
     if (selectedValue !== placeHolder) {
-      await sendDataToBackend(selectedValue);
+      await sendCourseToBackend(selectedValue);
+    } else {
+      setTeachers([placeHolder]);
+      setSelectedTeacher(placeHolder);
     }
   };
 
-  // Função para capturar a mudança no dropdown de professores
   const handleTeacherChange = async (event) => {
     const selectedValue = event.target.value;
     setSelectedTeacher(selectedValue);
+  
+    if (selectedValue !== placeHolder) {
+      await sendTeacherToBackend(selectedValue, selectedCourse); // Usando selectedCourse correto
+    }
   };
+  
 
-  // Obtém os dados do professor selecionado ou retorna valores vazios
   const selectedData = teacherData[selectedTeacher] || {
-    area: '',
+    area: area ||'',
     cnpj: '',
     aulas: '',
     valor: '',
@@ -64,52 +69,77 @@ function App() {
     emitido: ''
   };
 
-  // Função para enviar os dados ao backend
-  const sendDataToBackend = async (course) => {
-    setLoading(true); // Ativa o indicador de carregamento
-    const data = {
-      course
-    };
+  const sendCourseToBackend = async (course) => {
+    setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('http://localhost:5000/api/curso', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course })
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Resposta do back-end:', result); // Log adicional
-
-        // Converte a string JSON em um array de objetos
-        let teachersArray = [];
-        if (typeof result.teachers === 'string') {
-          teachersArray = JSON.parse(result.teachers); // Converte a string para array
-        } else if (Array.isArray(result.teachers)) {
-          teachersArray = result.teachers; // Já é um array
-        }
-
-        // Verifica se teachersArray é um array
-        if (Array.isArray(teachersArray)) {
-          setTeachers([placeHolder, ...teachersArray.map(teacher => teacher.name)]);
-          setError(null); // Limpa o erro se a requisição for bem-sucedida
-          setSelectedTeacher(teachersArray[0]?.name || placeHolder); // Seleciona o primeiro professor
-        } else {
-          setTeachers([placeHolder]);
-          setError('Nenhum professor encontrado para este curso.'); // Mensagem de erro
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error || 'Erro ao enviar os dados'); // Mensagem de erro do back-end
+        throw new Error(errorData.error || 'Erro desconhecido no backend');
+      }
+
+      const result = await response.json();
+      console.log('Resposta do backend:', result);
+
+      let teachersArray = [];
+      if (typeof result.teachers === 'string') {
+        teachersArray = JSON.parse(result.teachers);
+      } else if (Array.isArray(result.teachers)) {
+        teachersArray = result.teachers;
+      }
+
+      if (teachersArray.length > 0) {
+        setTeachers([placeHolder, ...teachersArray.map(t => t.name)]);
+        setSelectedTeacher(teachersArray[0].name);
+      } else {
+        setTeachers([placeHolder]);
+        setSelectedTeacher(placeHolder);
+        setError('Nenhum professor encontrado.');
       }
     } catch (error) {
       console.error('Erro na requisição:', error);
-      setError('Erro na comunicação com o servidor.'); // Mensagem de erro genérica
+      setError(error.message);
     } finally {
-      setLoading(false); // Desativa o indicador de carregamento
+      setLoading(false);
+    }
+  };
+
+  const sendTeacherToBackend = async (teacher, course) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/professor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher, course })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro desconhecido no backend');
+      }
+
+      const result = await response.json();
+      console.log('Resposta do backend:', result);
+
+      // Atualiza a grandeArea com base na resposta do backend
+      if (result.grandeArea) {
+        setGrandeArea(result.grandeArea);
+        console.log('Grande Área atualizada:', result.grandeArea);
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,10 +151,8 @@ function App() {
       </header>
       <main className="main">
         <div className="dropdowns-container">
-          {/* Dropdown de cursos com onChange */}
           <Dropdown id="courseDropdown" menuItems={courses} onChange={handleCourseChange} />
 
-          {/* Dropdown do professor com evento onChange */}
           <select className="dropdown" onChange={handleTeacherChange}>
             {teachers.map((teacher, index) => (
               <option key={index} value={teacher}>
@@ -135,13 +163,12 @@ function App() {
 
           <Dropdown menuItems={menuItems} />
         </div>
-        {loading && <div className="loading">Carregando...</div>} {/* Indicador de carregamento */}
-        {error && <div className="error-message">{error}</div>} {/* Exibe o erro */}
         <div className="table-container">
-          {/* Passando os dados selecionados para TableCreate */}
           <TableCreate name={selectedTeacher} {...selectedData} />
         </div>
       </main>
+        {loading && <div className="loading">Carregando...</div>}
+        {error && <div className="error-message">{error}</div>}
       <footer className="footer">Footer</footer>
     </div>
   );

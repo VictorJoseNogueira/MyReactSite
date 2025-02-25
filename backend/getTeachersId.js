@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
 const queryFindTheName = `
-SELECT id_teacher,id_os FROM database_relations
+SELECT id_teacher FROM database_relations
 WHERE id_course = ?;
 `;
 
@@ -28,7 +28,7 @@ async function FindTheName(id_curso) {
         console.log("Conexão com o banco estabelecida.");
 
         const result = await databaseConnector.executarConsulta(queryFindTheName, [id_curso]);
-)
+
 
         if (!result || result.length === 0) {
             throw new Error(`Nenhuma informação encontrada para o curso com ID: "${id_curso}".`);
