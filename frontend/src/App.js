@@ -146,7 +146,6 @@ function App() {
   return (
     <div className="App">
       <header className="header">
-        <img className="logo-medcof" src="./logo colored.png" alt="" />
         MedCof
       </header>
       <main className="main">
