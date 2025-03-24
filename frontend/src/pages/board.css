@@ -1,0 +1,78 @@
+/* Board.css */
+.board-container {
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
+  .board-content {
+    max-width: 100%;
+    max-height: 100vh;
+    padding: 10rem;
+    display: flex;
+    gap: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: 60vh;
+  }
+
+.board-left{
+background-color: transparent;
+
+}
+.board-right{
+    padding: auto 1rem;
+}
+
+.board-left-top{
+    background-color: transparent;
+
+}
+.placeholderImge{
+    background-color: rgb(15, 15, 95);
+    height: 500px;
+    width: 500px;
+    border-radius: 100%;
+
+}
+
+.board-left-bottom{
+    background-color: transparent
+}
+
+
+.board-right-top{
+    background-color: transparent;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    font-size: 1.5rem;
+    padding-bottom: 1rem;
+
+}
+.board-right-top button{
+    font-size: 2rem;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 8rem;
+    width: 20rem;
+
+}
+
+
+.board-right-bottom {
+    height: 100%;
+
+}
+
+  
+  
+  @media (max-width: 768px) {
+    .board-content {
+      padding: 1rem;
+      gap: 1rem;
+      justify-content: center;
+    }
+  }

@@ -1,0 +1,7 @@
+1 = 'hora/aula', 1k sem bonus
+2 = 'hora/aula', 2k bonus
+3 = 'aula', 1k bonus
+4 = 'modulo', 5k por modulo  sem bonus
+5 = 'pacote de modulos', 20k 
+6 = 'aula', 1.5k sem bonus 
+7 = 'modulo' 5.5k bonus

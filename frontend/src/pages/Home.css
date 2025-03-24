@@ -1,0 +1,54 @@
+/* Utilities.css */
+:root {
+  --primary-color: #4a6bdf;
+  --primary-hover: #3a56c0;
+  --info-bg: #e7f5ff;
+  --info-text: #1864ab;
+  --info-border: #74c0fc;
+  --error-bg: #fff5f5;
+  --error-text: #c92a2a;
+  --error-border: #ff8787;
+}
+
+button {
+  cursor: pointer;
+}
+.container {
+  max-width: 90%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Alertas */
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.alert.info {
+  background-color: var(--info-bg);
+  color: var(--info-text);
+  border: 1px solid var(--info-border);
+}
+
+.alert.error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+
+/* Efeitos de transição */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    max-width: 95%;
+    padding: 0 0.5rem;
+  }
+}
