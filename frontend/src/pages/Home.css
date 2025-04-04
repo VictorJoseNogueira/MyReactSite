@@ -45,6 +45,7 @@ button {
   transition: all 0.3s ease;
 }
 
+
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
@@ -52,3 +53,4 @@ button {
     padding: 0 0.5rem;
   }
 }
+

@@ -1,14 +1,14 @@
 import databaseConnector from './databasequerys/dataBaseConector.js';
+import getCourses from './databasequerys/getCourses.js';
 
 async function autorizePayCheck(req, res) {
-    const { course, teacher, module } = req.body;  // Assumindo que os dados vêm do corpo da requisição
-    const validCourses = ["tarefas", "curso2", "curso3"]; // Substitua com os cursos reais
+    const { course, teacher, module } = req.query;  // Assumindo que os dados vêm do corpo da requisição
+    const getCoursesList = await getCourses();
 
-    // Valida se o curso está na lista de cursos válidos
-    if (!validCourses.includes(course)) {
+    const courseNames = getCoursesList.map(item => item.course_name);
+    if (!courseNames.includes(course)) {
         return false;
     }
-
     // Valida os parâmetros
     if (!teacher || !module || !course) {
         return false;
@@ -28,3 +28,4 @@ async function autorizePayCheck(req, res) {
 }
 
 export default autorizePayCheck;
+

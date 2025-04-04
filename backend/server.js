@@ -7,6 +7,8 @@ import calculatePayment from './src/services/payCalc.js';
 import getTeacherData from './src/services/databasequerys/teacherData.js';
 import isRealTeacher from './src/services/databasequerys/isRealTeacher.js';
 import takeTeachersName from './src/services/databasequerys/takeTeachersName.js';
+import getCourses from './src/services/databasequerys/getCourses.js';
+import getTeachers from './src/services/databasequerys/getTeacher.js';
 // Configuração do ambiente
 
 // Configuração do ambiente
@@ -15,11 +17,20 @@ dotenv.config();
 // Inicialização do servidor
 const app = express();
 const PORT = 5000;
+let courses, teacherList;
 
+
+(async () => {
+  try {
+    courses = await getCourses();
+    teacherList = await takeTeachersName();
+  } catch (error) {
+    console.error('Error initializing data:', error);
+  }
+})();
 // Middlewares
 app.use(cors());
 app.use(bodyParser.json());
-const teacherList = await takeTeachersName();
 // Dados iniciais do professor
 let teacherData = {
   "Area": "Oftalmo",
@@ -62,24 +73,28 @@ const processPayment = async (teacher, module, course) => {
     return payment;
 };
 
+
 app.get('/', (req, res) => {
   res.status(200).json({
     message: 'Bem-vindo ao servidor!',
-    teacherList
+    data: {
+      teacherList,
+    }
   });
-})
+});
 // Rota principal
-app.post('/', async (req, res) => {
-  const { course, teacher, module } = req.body;
+app.get('/search', async (req, res) => {
+  const { course, teacher, module } = req.query;
+  console.log(course, teacher, module);
 
   try {
     // Validação dos dados recebidos
     validateInput(course, teacher, module);
-
+    
     // Verifica se o professor existe no banco de dados
     const teacherExists = await isRealTeacher(teacher);
     if (!teacherExists) {
-      // Se o professor não existir, define todos os campos de teacherData como NULL
+
       teacherData = {
         "Area": null,
         "cnpj": null,
@@ -96,10 +111,10 @@ app.post('/', async (req, res) => {
         paymentData: null
       });
     }
-
+    
     // Atualização dos dados do professor
     await updateTeacherData(teacher, course);
-
+    
     // Autorização do pagamento
     const isAuthorized = await autorizePayCheck(req, res);
     if (!isAuthorized) {
@@ -107,19 +122,19 @@ app.post('/', async (req, res) => {
       teacherData.paymentStatus = "Negado";
       teacherData.valor = 0;
       return res.status(200).json({
-      message: 'Dados do curso carregados com sucesso!',
-      teacherInfo: teacherData,
-      paymentData: null
-    });
+        message: 'Dados do curso carregados com sucesso!',
+        teacherInfo: teacherData,
+        paymentData: null
+      });
     }
-
+    
     // Processamento do pagamento
     const payment = await processPayment(teacher, module, course);
-
+    
     // Resposta para o front-end
     return res.status(200).json({
       message: 'Dados do curso carregados com sucesso!',
-        
+      
       teacherInfo: teacherData,
       paymentData: payment
     });
@@ -127,6 +142,26 @@ app.post('/', async (req, res) => {
     console.error("Erro no processamento:", error.message);
     return res.status(500).json({ error: error.message });
   }
+});
+
+app.get('/courses', (req, res) => {
+  res.status(200).json({ courses });
+})
+
+
+
+app.get('/teachers', async (req, res) => {
+  const course = req.query.course;
+  const teacher = await getTeachers(course);
+  res.status(200).json({teacher});
+})
+app.get('/module', (req, res) => {
+  res.status(200).json({module2:'Módulo 1'});
+})
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
 // Inicialização do servidor
