@@ -30,7 +30,7 @@ const Home = () => {
   
     if (teacherObj) {
       setModuleList(teacherObj.modules);
-      setSelectedModule(""); // Reseta o módulo selecionado
+      setSelectedModule("");
     } else {
       console.error("Professor não encontrado na lista:", teacher);
     }
