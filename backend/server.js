@@ -155,9 +155,6 @@ app.get('/teachers', async (req, res) => {
   const teacher = await getTeachers(course);
   res.status(200).json({teacher});
 })
-app.get('/module', (req, res) => {
-  res.status(200).json({module2:'Módulo 1'});
-})
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

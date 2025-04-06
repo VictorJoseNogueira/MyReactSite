@@ -78,9 +78,7 @@ const BoardRight = ({
                 </tr>
               </tbody>
             </table>
-            <div className="button-container">
-              <button>Pagar professor</button>
-            </div>
+
           </div>
         </div>
       ) : (
